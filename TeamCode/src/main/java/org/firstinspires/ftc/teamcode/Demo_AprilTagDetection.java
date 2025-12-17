@@ -12,7 +12,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import java.util.List;
 
 @TeleOp(name = "AprilTag Detection Demo", group = "Vision")
-public class AprilTagDetectionDemo extends LinearOpMode {
+public class Demo_AprilTagDetection extends LinearOpMode {
 
     private AprilTagProcessor aprilTag;
     private VisionPortal visionPortal;

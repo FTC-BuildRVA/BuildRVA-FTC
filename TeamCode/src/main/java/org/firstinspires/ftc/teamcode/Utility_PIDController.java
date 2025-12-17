@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
-public class PIDController {
+public class Utility_PIDController {
     private double Kp;
     private double Ki;
     private double Kd;
@@ -18,7 +18,7 @@ public class PIDController {
     /**
      * Constructor with PID gains
      */
-    public PIDController(double kp, double ki, double kd) {
+    public Utility_PIDController(double kp, double ki, double kd) {
         this.Kp = kp;
         this.Ki = ki;
         this.Kd = kd;

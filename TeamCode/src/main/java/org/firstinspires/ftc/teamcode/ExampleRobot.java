@@ -30,7 +30,7 @@ public class ExampleRobot extends LinearOpMode {
     private IMU imu;
 
     // Use the new MecanumDrive class instead of individual motor variables
-    private MecanumDrive drive;
+    private Utiltiy_MecanumDrive drive;
 
     private DcMotor intakeMotor;
     private DcMotor shooterMotorLeft;
@@ -84,7 +84,7 @@ public class ExampleRobot extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         // SETUP
-        drive = new MecanumDrive(hardwareMap);  // Initialize the drive system
+        drive = new Utiltiy_MecanumDrive(hardwareMap);  // Initialize the drive system
         initializeIMU();
         initializeTelemetry();
         initializeCamera();

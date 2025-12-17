@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.hardware.IMU;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 @Config
-public class MecanumDrive {
+public class Utiltiy_MecanumDrive {
     private DcMotor frontLeftMotor, backLeftMotor, frontRightMotor, backRightMotor;
     private IMU imu;
 
@@ -21,13 +21,13 @@ public class MecanumDrive {
     private double turn = 0.0;
 
     // PID Controller for heading
-    private PIDController headingController;
+    private Utility_PIDController headingController;
     private boolean usePIDControl = false;
 
     /**
      * Constructor - initializes the motors and IMU from the hardware map
      */
-    public MecanumDrive(HardwareMap hardwareMap) {
+    public Utiltiy_MecanumDrive(HardwareMap hardwareMap) {
         frontLeftMotor = hardwareMap.dcMotor.get("front_left");
         backLeftMotor = hardwareMap.dcMotor.get("back_left");
         frontRightMotor = hardwareMap.dcMotor.get("front_right");
@@ -41,7 +41,7 @@ public class MecanumDrive {
         imu = hardwareMap.get(IMU.class, "imu");
 
         // Initialize PID controller with default gains
-        headingController = new PIDController(0.02, 0.001, 0.0);
+        headingController = new Utility_PIDController(0.02, 0.001, 0.0);
         headingController.setAngleWrap(true);
         headingController.setIntegralLimits(0.5);
         headingController.setOutputLimits(-1.0, 1.0);
@@ -92,7 +92,7 @@ public class MecanumDrive {
     /**
      * Get the heading PID controller for advanced configuration
      */
-    public PIDController getHeadingController() {
+    public Utility_PIDController getHeadingController() {
         return headingController;
     }
 
