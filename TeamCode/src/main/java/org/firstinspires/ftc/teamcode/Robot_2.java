@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 
@@ -38,13 +39,13 @@ public class Robot_2 extends LinearOpMode {
     private DcMotor shooterMotorLeft, shooterMotorRight;
     private DcMotor intakeMotor;
     private CRServo leftIntakeServo, rightIntakeServo, middleIntakeServo;
-    private double frontLeftPower, backLeftPower, frontRightPower, backRightPower;
+    private double forward, strafe, turn;
+    public static double moveSpeedMultiplier = 0.75;
+    private double moveDirection = 1.0;
     private double rampPower, shooterPower;
+    public static double Shooter = 1950;
+    private double shooterEnable = 1.0;
 
-    public static double fl_direction = 1.0;
-    public static double fr_direction = -1.0;
-    public static double bl_direction = -1.0;
-    public static double br_direction = -1.0;
     public static double driveSpeedMultiplier = 1.0;
     private double intakeDirection = -1.0;
     private double intakeServoPower = 0;
@@ -87,9 +88,6 @@ public class Robot_2 extends LinearOpMode {
     private AprilTagProcessor aprilTag;
     private VisionPortal visionPortal;
 
-    public static int cameraFramerate = 0;
-    private int lastFramerate = cameraFramerate;
-
     @Override
     public void runOpMode() throws InterruptedException {
 
@@ -108,8 +106,6 @@ public class Robot_2 extends LinearOpMode {
             pollController();
             driveMotors();
             driveServos();
-
-            manageFramerateChanges();
 
             runEtc();
 
@@ -187,6 +183,11 @@ public class Robot_2 extends LinearOpMode {
         frontRightMotor = hardwareMap.dcMotor.get("front_right");
         backRightMotor = hardwareMap.dcMotor.get("back_right");
 
+        frontLeftMotor.setDirection(DcMotor.Direction.FORWARD);
+        backLeftMotor.setDirection(DcMotor.Direction.FORWARD);
+        backRightMotor.setDirection(DcMotor.Direction.REVERSE);
+        frontRightMotor.setDirection(DcMotor.Direction.FORWARD);
+
         shooterMotorLeft = hardwareMap.dcMotor.get("shooter_left");
         shooterMotorRight = hardwareMap.dcMotor.get("shooter_right");
 
@@ -196,9 +197,9 @@ public class Robot_2 extends LinearOpMode {
     }
 
     private void initalizeServos() {
-        middleIntakeServo = hardwareMap.crservo.get("intake_middle");
-        leftIntakeServo = hardwareMap.crservo.get("intake_left");
-        rightIntakeServo = hardwareMap.crservo.get("intake_right");
+        middleIntakeServo = hardwareMap.crservo.get("feeder_mid");
+        leftIntakeServo = hardwareMap.crservo.get("feeder_left");
+        rightIntakeServo = hardwareMap.crservo.get("feeder_right");
     }
 
     private void pollController() {// Mecanum drive motors
@@ -239,17 +240,19 @@ public class Robot_2 extends LinearOpMode {
         // This ensures all the powers maintain the same ratio,
         // but only if at least one is out of the range [-1, 1]
         double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
-        frontLeftPower = (y + x + rx) / denominator * driveSpeedMultiplier * fl_direction;
-        backLeftPower = (y - x + rx) / denominator * driveSpeedMultiplier * bl_direction;
-        frontRightPower = -(y - x - rx) / denominator * driveSpeedMultiplier * fr_direction;
-        backRightPower = -(y + x - rx) / denominator * driveSpeedMultiplier * br_direction;
+
+        turn = turn * moveSpeedMultiplier;
+        forward = forward * moveSpeedMultiplier * moveDirection;
+        strafe = strafe * moveSpeedMultiplier * moveDirection;
+        ((DcMotorEx) shooterMotorLeft).setVelocity((Shooter / 2.1429) * shooterEnable);
+        ((DcMotorEx) shooterMotorRight).setVelocity((Shooter / 2.1429) * shooterEnable);
     }
 
     private void driveMotors() {
-        frontLeftMotor.setPower(frontLeftPower);
-        backLeftMotor.setPower(backLeftPower);
-        frontRightMotor.setPower(frontRightPower);
-        backRightMotor.setPower(backRightPower);
+        frontLeftMotor.setPower(forward + strafe + turn);
+        frontRightMotor.setPower((forward - strafe) - turn);
+        backLeftMotor.setPower((forward - strafe) + turn);
+        backRightMotor.setPower((forward + strafe) - turn);
     }
 
     private void runEtc() {
@@ -324,15 +327,6 @@ public class Robot_2 extends LinearOpMode {
 //        int maxGain = gainControl.getMaxGain();
 //        gainControl.setGain(maxGain);
 
-        dashboard.startCameraStream(visionPortal, cameraFramerate);
-    }
-
-    private void manageFramerateChanges() {
-        if (cameraFramerate != lastFramerate) {
-            dashboard.stopCameraStream();
-            dashboard.startCameraStream(visionPortal, cameraFramerate);
-            lastFramerate = cameraFramerate;
-        }
     }
 
 }
