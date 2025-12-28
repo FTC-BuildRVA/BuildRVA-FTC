@@ -18,7 +18,10 @@ import org.firstinspires.ftc.robotcore.external.JavaUtil;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.FocusControl;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.PtzControl;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.WhiteBalanceControl;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
@@ -218,78 +221,47 @@ public class javaTest extends LinearOpMode {
     }
 
     /**
-     * Wait for the camera to be open.
-     */
-    private void waitForCamera() {
-        int cameraLoops;
-
-        if (!myVisionPortal.getCameraState().equals(VisionPortal.CameraState.STREAMING)) {
-            telemetry.addData("Camera", "Waiting");
-            telemetry.update();
-            cameraLoops = 0;
-            while (!isStopRequested() && !myVisionPortal.getCameraState().equals(VisionPortal.CameraState.STREAMING)) {
-                sleep(20);
-                cameraLoops += 1;
-                telemetry.addData("state", cameraState);
-                telemetry.addData("loops", cameraLoops);
-                telemetry.update();
-            }
-            telemetry.addData("Camera", "Ready");
-            telemetry.update();
-        }
-    }
-
-    /**
      * Initialize AprilTag Detection.vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
      */
     private void initAprilTag() {
-        AprilTagProcessor.Builder myAprilTagProcessorBuilder;
-        VisionPortal.Builder myVisionPortalBuilder;
-        ExposureControl myExposureControl;
-        GainControl myGainControl;
+        // Create the AprilTag processor by using a builder.
+        myAprilTagProcessor = new AprilTagProcessor.Builder().build();
 
-        // First, create an AprilTagProcessor.Builder.
-        myAprilTagProcessorBuilder = new AprilTagProcessor.Builder();
-        // Create an AprilTagProcessor by calling build.
-        myAprilTagProcessor = myAprilTagProcessorBuilder.build();
-        // Next, create a VisionPortal.Builder and set attributes related to the camera.
-        myVisionPortalBuilder = new VisionPortal.Builder();
-        if (USE_WEBCAM) {
-            // Use a webcam.
-            myVisionPortalBuilder.setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"));
-        } else {
-            // Use the device's back camera.
-            myVisionPortalBuilder.setCamera(BuiltinCameraDirection.BACK);
+        // Create the webcam vision portal by using a builder.
+        myVisionPortal = new VisionPortal.Builder()
+                .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
+                .addProcessor(myAprilTagProcessor)
+                .setCameraResolution(new Size(640, 480))
+                .build();
+        // Supported resolutions:
+        // 640x360
+        // 640x480
+        // 800x448
+        // 864x480
+        // 800x600
+        // 1920x1080
+
+        if (myVisionPortal.getCameraState() != VisionPortal.CameraState.STREAMING) {
+            while (!isStopRequested() && (myVisionPortal.getCameraState() != VisionPortal.CameraState.STREAMING)) {
+                sleep(20);
+            }
         }
-//        myVisionPortalBuilder.setCameraResolution(new Size(800, 448));
-        // Add myAprilTagProcessor to the VisionPortal.Builder.
-        myVisionPortalBuilder.addProcessor(myAprilTagProcessor);
-        // Create a VisionPortal by calling build.
-        // Build the VisionPortal object and assign it to a variable.
-        myVisionPortal = myVisionPortalBuilder.build();
-        // Wait for the camera to be open.
-        cameraState = 0;
-        waitForCamera();
-        cameraState = 1;
-        // Get camera control values unless we are stopping.
-        // Set camera controls unless we are stopping.
+
         if (!isStopRequested()) {
-            // Get the ExposureControl object, to allow adjusting the camera's exposure.
-            myExposureControl = myVisionPortal.getCameraControl(ExposureControl.class);
-            // Get the GainControl object, to allow adjusting the camera's gain.
-            myGainControl = myVisionPortal.getCameraControl(GainControl.class);
-            waitForCamera();
-            // Set exposure.  Make sure we are in Manual Mode for these values to take effect.
-            if (!myExposureControl.getMode().equals(ExposureControl.Mode.Manual)) {
-                myExposureControl.setMode(ExposureControl.Mode.Manual);
+            ExposureControl exposureControl = myVisionPortal.getCameraControl(ExposureControl.class);
+            if (exposureControl.getMode() != ExposureControl.Mode.Manual) {
+                exposureControl.setMode(ExposureControl.Mode.Manual);
                 sleep(50);
             }
-            myExposureControl.setExposure(2, TimeUnit.MILLISECONDS);
+            exposureControl.setExposure((long) 1, TimeUnit.MILLISECONDS);
             sleep(20);
-            // Set Gain.
-            myGainControl.setGain(100);
+
+            GainControl gainControl = myVisionPortal.getCameraControl(GainControl.class);
+            gainControl.setGain(100);
             sleep(20);
         }
+
+
     }
 
     /**
